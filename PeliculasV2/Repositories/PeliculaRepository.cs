@@ -8,9 +8,11 @@ namespace MVC.Repositorios;
 
 public class PeliculaRepository : IPeliculaRepository
 {
-    private readonly string CadenaConexion = "Data Source=./DB/streaming.db";
-    public PeliculaRepository()
+    // para logger
+    private readonly string CadenaConexion;
+    public PeliculaRepository(string cadenaConexion)
     {
+        CadenaConexion = cadenaConexion;
     }
 
     // CRUD

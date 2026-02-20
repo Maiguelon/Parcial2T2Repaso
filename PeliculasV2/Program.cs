@@ -1,6 +1,6 @@
-using MVC.Interfaces; 
-using MVC.Repositorios; 
-using MVC.Services; 
+using MVC.Interfaces;
+using MVC.Repositorios;
+using MVC.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSession(options =>
@@ -9,6 +9,10 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true; // Solo accesible desde HTTP, no JavaScript
     options.Cookie.IsEssential = true; // Necesario incluso si el usuario no acepta cookies
 });
+
+// para logger
+var CadenaDeConexion = builder.Configuration.GetConnectionString("SqliteConexion")!.ToString();
+builder.Services.AddSingleton<string>(CadenaDeConexion);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserRepository, UsuarioRepository>();

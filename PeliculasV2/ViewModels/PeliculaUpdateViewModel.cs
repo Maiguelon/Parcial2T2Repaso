@@ -13,7 +13,7 @@ public class PeliculaUpdateViewModel : PeliculaCreateViewModel // heredo campos 
     {
     }
 
-    public PeliculaUpdateViewModel(Pelicula pelicula) : base()
+    public PeliculaUpdateViewModel(Pelicula pelicula) : base(pelicula)
     {
         Id = pelicula.Id;
     }

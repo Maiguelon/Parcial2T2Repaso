@@ -16,49 +16,74 @@ public class LoginController : Controller
     // Acción que devuelve la vista de login
     public IActionResult Index()
     {
-        // Crear un nuevo ViewModel, pasamos el estado de autenticación
-        var model = new LoginViewModel()
+        try
         {
-            IsAuthenticated = HttpContext.Session.GetString("IsAuthenticated") == "true"
-        };
-        return View(model); // Pasamos el ViewModel con la propiedad de autenticación
+            // Crear un nuevo ViewModel, pasamos el estado de autenticación
+            var model = new LoginViewModel()
+            {
+                IsAuthenticated = HttpContext.Session.GetString("IsAuthenticated") == "true"
+            };
+            return View(model); // Pasamos el ViewModel con la propiedad de autenticación
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error", "Home");
+        }
     }
 
     // Acción para procesar el login
     [HttpPost]
     public IActionResult Login(LoginViewModel model)
     {
-        // Verificar que los datos de entrada no estén vacíos
-        if (string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Password))
+        try
         {
-            model.ErrorMessage = "Por favor ingrese su nombre de usuario y contraseña.";
+            // Verificar que los datos de entrada no estén vacíos
+            if (string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Password))
+            {
+                model.ErrorMessage = "Por favor ingrese su nombre de usuario y contraseña.";
+                return View("Index", model);
+            }
+
+            // Si el usuario existe y las credenciales son correctas
+            if (_authenticationService.Login(model.Username, model.Password))
+            {
+                // Redirigir a la página principal o dashboard
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Si las credenciales no son correctas, mostrar mensaje de error
+            model.ErrorMessage = "Credenciales inválidas.";
+            model.IsAuthenticated = false;
             return View("Index", model);
         }
-
-        // Si el usuario existe y las credenciales son correctas
-        if (_authenticationService.Login(model.Username, model.Password))
+        catch (Exception ex)
         {
-            // Redirigir a la página principal o dashboard
-            return RedirectToAction("Index", "Home");
+            // Si se cae la base de datos o algo grave pasa
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error", "Home"); // error amigable
         }
-
-        // Si las credenciales no son correctas, mostrar mensaje de error
-        model.ErrorMessage = "Credenciales inválidas.";
-        model.IsAuthenticated = false;
-        return View("Index", model);
     }
 
     // Acción para cerrar sesión
     public IActionResult Logout()
     {
-        // Limpiar la sesión
-        _authenticationService.Logout();
+        try
+        {
+            // Limpiar la sesión
+            _authenticationService.Logout();
 
-        // Redirigir a la vista de login
-        return RedirectToAction("Index");
+            // Redirigir a la vista de login
+            return RedirectToAction("Index");
+        }
+        catch (Exception ex)
+        {
+            // Si se cae la base de datos o algo grave pasa
+            _logger.LogError(ex.ToString());
+            return RedirectToAction("Error", "Home"); // error amigable
+        }
     }
 
-    // --- ESTO ES LO NUEVO QUE AGREGÁS ---
     public IActionResult AccesoDenegado()
     {
         return Content("Error 403: No tenés permisos de Admin para acceder a esta sección.");
